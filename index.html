@@ -1,0 +1,1377 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>NullOrigin — Beyond Earth CTF</title>
+<meta name="description" content="NullOrigin presents Beyond Earth — a 48-hour space-themed Jeopardy CTF. Ground stations, radio links, flight computers and orbital mechanics. 12 Dec 2026.">
+<meta name="og:title" content="NullOrigin — Beyond Earth CTF">
+<meta name="og:description" content="A 48-hour Jeopardy CTF built around satellites, ground stations and orbital mechanics. 12 Dec 2026 · ₹1,00,000 prize pool.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    /* Layout: a vertical ascent. The poster's white sky on top, a scroll-driven Kármán line that wipes the page into black space, and a fixed altimeter that tracks the climb in real kilometres. */
+    --paper: #ffffff;
+    --ink: #0b0b0d;
+    --graphite: #5f6168;
+    --hairline: #e2e3e6;
+    --void: #050507;
+    --starlight: #f3f3f1;
+    --mist: #c6c7cc;
+    --ash: #8f9097;
+    --rule: #202127;
+    --dim: #34353c;
+    --moon-1: #ececee;
+    --moon-2: #bdbec3;
+    --moon-3: #94959b;
+    --earth-top: #5b5f68;
+    --blend: #ffffff;
+    --blend-ink: #000000;
+    --halo: rgba(243, 243, 241, 0.14);
+    --glow-1: rgba(243, 243, 241, 0.10);
+    --glow-2: rgba(243, 243, 241, 0.045);
+    --glint-1: rgba(255, 255, 255, 0.6);
+    --glint-0: rgba(255, 255, 255, 0);
+    --nav-light: rgba(255, 255, 255, 0.84);
+    --nav-dark: rgba(5, 5, 7, 0.78);
+    --mark-top: #26272d;
+    --mark-bottom: rgba(5, 5, 7, 0);
+
+    --font-display: "Montserrat", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+    --track-title: 0.3em;
+    --nav-h: 64px;
+    --maxw: 1160px;
+    --ease: cubic-bezier(.16, 1, .3, 1);
+  }
+
+  html {
+    background: var(--void) linear-gradient(to bottom, var(--paper) 0 50%, var(--void) 50% 100%) no-repeat;
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+  body {
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 16px;
+    line-height: 1.6;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  img, svg, canvas { display: block; }
+  a { color: inherit; }
+  h1, h2, h3 { font-weight: inherit; }
+
+  .sr-only {
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  .skip {
+    position: fixed; z-index: 100;
+    left: max(16px, env(safe-area-inset-left, 0px));
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    background: var(--ink); color: var(--paper);
+    padding: 14px 18px; font: 600 .8125rem/1 var(--font-display); letter-spacing: .08em;
+    text-decoration: none; transform: translateY(-220%); transition: transform .2s;
+  }
+  .skip:focus { transform: none; outline: 2px solid var(--paper); outline-offset: 2px; }
+
+  .wrap {
+    width: 100%;
+    max-width: calc(var(--maxw) + 96px);
+    margin-inline: auto;
+    padding-left: max(clamp(16px, 4vw, 48px), env(safe-area-inset-left, 0px));
+    padding-right: max(clamp(16px, 4vw, 48px), env(safe-area-inset-right, 0px));
+  }
+
+  .on-paper { background: var(--paper); color: var(--ink); }
+  .on-void { color: var(--starlight); }
+  .on-paper :focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+  .on-void :focus-visible { outline: 2px solid var(--starlight); outline-offset: 4px; }
+  ::selection { background: var(--ink); color: var(--paper); }
+  .on-void ::selection { background: var(--starlight); color: var(--void); }
+
+  .sky { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+  main { position: relative; z-index: 1; overflow-x: clip; }
+  main:focus { outline: none; }
+
+  /* ---------- shared type ---------- */
+  .eyebrow {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0;
+    font: 500 .75rem/1.3 var(--font-mono); letter-spacing: .16em; text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+  .eyebrow span + span::before {
+    content: ""; display: inline-block; width: 28px; height: 1px; background: currentColor;
+    opacity: .5; vertical-align: middle; margin-right: 14px;
+  }
+  .on-paper .eyebrow { color: var(--graphite); }
+  .on-void .eyebrow { color: var(--ash); }
+
+  .sec-title {
+    margin: 22px 0 0; font-weight: 300; font-size: clamp(2.125rem, 4.6vw, 4rem);
+    line-height: 1.05; letter-spacing: -.025em; text-wrap: balance;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 50px; padding: 0 calc(30px - .22em) 0 30px;
+    font: 600 .71875rem/1 var(--font-display); letter-spacing: .22em; text-transform: uppercase;
+    text-decoration: none; border: 1px solid transparent; white-space: nowrap;
+    transition: background-color .35s var(--ease), color .35s var(--ease), border-color .35s var(--ease);
+  }
+  .btn-ink { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .btn-ink:hover { background: transparent; color: var(--ink); }
+  .btn-light { background: var(--starlight); color: var(--void); border-color: var(--starlight); }
+  .btn-light:hover { background: transparent; color: var(--starlight); }
+  .text-link {
+    display: inline-flex; align-items: center; min-height: 44px;
+    font: 500 .71875rem/1 var(--font-display); letter-spacing: .22em; text-transform: uppercase;
+    text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 7px;
+  }
+  .text-link:hover { text-decoration-thickness: 2px; }
+
+  /* ---------- nav ---------- */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+    padding-top: env(safe-area-inset-top, 0px);
+    color: var(--ink); border-bottom: 1px solid transparent;
+    transition: background-color .4s var(--ease), color .4s var(--ease), border-color .4s var(--ease);
+  }
+  .nav.is-scrolled {
+    background: var(--nav-light); border-bottom-color: var(--hairline);
+    -webkit-backdrop-filter: blur(14px) saturate(1.1); backdrop-filter: blur(14px) saturate(1.1);
+  }
+  .nav.is-dark { color: var(--starlight); }
+  .nav.is-dark.is-scrolled { background: var(--nav-dark); border-bottom-color: var(--rule); }
+  .nav-inner { height: var(--nav-h); display: flex; align-items: center; gap: 28px; }
+  .nav a { text-decoration: none; }
+  .nav :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  .nav-brand {
+    font-weight: 800; font-size: 1.0625rem; letter-spacing: .04em; line-height: 1;
+    padding: 12px 0; opacity: 0; transform: translateY(-6px);
+    transition: opacity .45s var(--ease), transform .45s var(--ease);
+  }
+  .nav.show-brand .nav-brand, .nav-brand:focus-visible { opacity: 1; transform: none; }
+  .nav-links-wrap { margin-left: auto; }
+  .nav-links { display: flex; gap: 30px; list-style: none; margin: 0; padding: 0; }
+  .nav-links a {
+    display: inline-block; padding: 12px 0;
+    font-weight: 500; font-size: .6875rem; letter-spacing: .2em; text-transform: uppercase;
+  }
+  .nav-links a:hover { text-decoration: underline; text-underline-offset: 6px; }
+  .nav-alt {
+    font: 500 .6875rem/1 var(--font-mono); letter-spacing: .12em;
+    text-transform: uppercase; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .nav-cta {
+    display: inline-flex; align-items: center; min-height: 40px; padding: 0 calc(18px - .2em) 0 18px;
+    border: 1px solid currentColor;
+    font-weight: 600; font-size: .6875rem; letter-spacing: .2em; text-transform: uppercase;
+    transition: background-color .25s, color .25s;
+  }
+  .nav-cta:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .nav.is-dark .nav-cta:hover { background: var(--starlight); color: var(--void); border-color: var(--starlight); }
+
+  /* ---------- altimeter ---------- */
+  .altimeter {
+    position: fixed; z-index: 30; display: none; width: 84px;
+    right: max(24px, env(safe-area-inset-right, 0px)); top: 54%; transform: translateY(-50%);
+    color: var(--blend); mix-blend-mode: difference; pointer-events: none;
+    font-family: var(--font-mono); text-align: right;
+  }
+  .alt-head { position: absolute; right: 0; bottom: calc(100% + 20px); width: 84px; }
+  .alt-cap { font-size: .625rem; letter-spacing: .22em; opacity: .7; }
+  .alt-read { margin-top: 6px; font-size: .9375rem; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .alt-read small { font-size: .5625rem; letter-spacing: .12em; margin-left: 3px; }
+  .alt-layer { margin-top: 5px; font-size: .5625rem; line-height: 1.4; letter-spacing: .12em; text-transform: uppercase; }
+  .alt-scale { position: relative; height: 36vh; }
+  .alt-scale::before { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 1px; background: currentColor; opacity: .35; }
+  .alt-tick {
+    position: absolute; right: 0; bottom: calc(var(--f) * 100%); transform: translateY(50%);
+    display: flex; align-items: center; gap: 8px;
+    font-size: .625rem; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; opacity: .75;
+    font-variant-numeric: tabular-nums;
+  }
+  .alt-tick::after { content: ""; width: 7px; height: 1px; background: currentColor; }
+  .alt-tick.minor { opacity: .45; }
+  .alt-tick.minor::after { width: 4px; }
+  .alt-marker {
+    position: absolute; right: -5px; bottom: calc(var(--m, 0) * 100%); transform: translateY(50%);
+    width: 11px; height: 11px; border: 1px solid currentColor; border-radius: 50%;
+  }
+  .alt-marker::before { content: ""; position: absolute; inset: 2px; border-radius: 50%; background: currentColor; }
+  @media (min-width: 1440px) {
+    .altimeter { display: block; }
+    .nav-alt { display: none; }
+  }
+
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative; overflow: hidden; text-align: center;
+    padding-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + clamp(8px, 2vh, 28px));
+    padding-bottom: clamp(44px, 7vh, 88px);
+  }
+  .presenter { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; line-height: 1; }
+  .presenter-brand { font-weight: 800; font-size: clamp(1.375rem, 2.2vw, 2rem); letter-spacing: .03em; }
+  .presenter-sub { font-weight: 500; font-size: clamp(.625rem, .8vw, .75rem); letter-spacing: .62em; padding-left: .62em; }
+
+  .hero-art {
+    --art-h: clamp(220px, 50vh, 620px);
+    width: min(100%, calc(var(--art-h) * 1.1956));
+    aspect-ratio: 1076 / 900; max-width: 100%;
+    margin: clamp(6px, 1.4vh, 18px) auto 0;
+  }
+  .hero-art img {
+    width: 100%; height: 100%; object-fit: contain;
+    transform: translate3d(var(--px, 0px), var(--py, 0px), 0) scale(var(--ps, 1));
+    transform-origin: 50% 62%; will-change: transform;
+  }
+
+  .kicker {
+    margin: clamp(4px, 1.2vh, 14px) 0 0; font-weight: 400;
+    font-size: clamp(.6875rem, 1.55vw, 1.375rem); line-height: 1.4;
+    letter-spacing: .55em; padding-left: .55em; text-transform: uppercase;
+  }
+
+  .title {
+    margin: clamp(10px, 1.6vh, 20px) 0 0; font-weight: 400;
+    font-size: clamp(2.25rem, 7.3vw, 6rem); line-height: 1; letter-spacing: var(--track-title);
+  }
+  .title-vis { display: flex; flex-wrap: wrap; justify-content: center; column-gap: .85em; row-gap: .14em; }
+  .title .w { display: inline-block; white-space: nowrap; margin-right: calc(-1 * var(--track-title)); }
+  .title .ch { display: inline-block; }
+  .eclipse {
+    position: relative; width: .9em; height: .9em; border-radius: 50%;
+    vertical-align: -.1em; margin: 0 calc(var(--track-title) + .03em) 0 .03em;
+    background: radial-gradient(circle at 30% 50%, var(--paper) 0 30%, var(--moon-1) 58%, var(--moon-2) 84%, var(--moon-3) 100%);
+    box-shadow: inset -.115em 0 0 0 var(--ink);
+  }
+  .eclipse::after {
+    content: ""; position: absolute; width: .3em; height: .3em; right: .02em; top: .04em; border-radius: 50%;
+    background: radial-gradient(circle, var(--paper) 0 14%, var(--glint-1) 30%, var(--glint-0) 68%);
+  }
+  .lambda { width: .688em; height: .7em; margin-right: var(--track-title); }
+  .lambda svg { width: 100%; height: 100%; overflow: visible; }
+  .w-earth .ch:not(.lambda) {
+    background: linear-gradient(180deg, var(--earth-top) 16%, var(--ink) 74%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  @media (forced-colors: active) {
+    .w-earth .ch:not(.lambda) { background: none; -webkit-text-fill-color: CanvasText; color: CanvasText; }
+  }
+
+  .hero-meta {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 24px;
+    margin-top: clamp(28px, 4.5vh, 52px); text-align: left;
+  }
+  .hero-meta-l, .hero-meta-r {
+    margin: 0; font: 500 .6875rem/1.75 var(--font-mono); letter-spacing: .16em; text-transform: uppercase;
+    color: var(--graphite); font-variant-numeric: tabular-nums;
+  }
+  .hero-meta-r { text-align: right; }
+  .hero-meta strong { display: block; color: var(--ink); font-weight: 500; }
+  .hero-cta { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px 30px; }
+
+  /* ---------- transmission ---------- */
+  .section-pad { padding-block: clamp(96px, 15vh, 176px); }
+  .tx-grid {
+    display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: clamp(40px, 7vw, 120px);
+    align-items: start; margin-top: clamp(36px, 6vh, 64px);
+  }
+  .tx-panel {
+    position: sticky; top: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + 28px);
+    border-top: 1px solid var(--ink); padding-top: 16px;
+    font: 400 .75rem/1.5 var(--font-mono); letter-spacing: .08em; color: var(--graphite);
+  }
+  .tx-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0; color: var(--ink); font-weight: 500; letter-spacing: .16em; text-transform: uppercase; }
+  .tx-live { display: inline-flex; align-items: center; gap: 9px; }
+  .tx-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink); }
+  .tx-wave { width: 100%; height: 84px; margin: 16px 0 18px; border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); }
+  .tx-list { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 11px 16px; margin: 0; }
+  .tx-list dt { text-transform: uppercase; letter-spacing: .14em; }
+  .tx-list dd { margin: 0; text-align: right; color: var(--ink); letter-spacing: .1em; }
+  .tx-copy { min-width: 0; }
+  .tx-copy h2 {
+    margin: 0; font-weight: 300; font-size: clamp(2.125rem, 4.6vw, 4rem);
+    line-height: 1.05; letter-spacing: -.025em; text-wrap: balance; max-width: 13em;
+  }
+  .tx-lead { margin: clamp(24px, 4vh, 40px) 0 0; font-size: clamp(1.125rem, 1.65vw, 1.4375rem); line-height: 1.55; max-width: 30em; }
+  .tx-body { margin: 20px 0 0; max-width: 36em; color: var(--graphite); line-height: 1.8; }
+  .sweep-ready .sw { color: var(--graphite); transition: color .7s var(--ease); }
+  .sweep-on .sw { color: inherit; transition-delay: calc(var(--i, 0) * 24ms); }
+
+  /* ---------- kármán line ---------- */
+  .karman { position: relative; height: 270vh; }
+  .k-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; --edge: 100%; }
+  .k-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .k-light { background: var(--paper); color: var(--ink); clip-path: inset(0 0 calc(100% - var(--edge)) 0); }
+  .k-dark { color: var(--starlight); }
+  .k-content {
+    width: 100%; max-width: 1100px;
+    padding-left: max(clamp(16px, 4vw, 48px), env(safe-area-inset-left, 0px));
+    padding-right: max(clamp(16px, 4vw, 48px), env(safe-area-inset-right, 0px));
+  }
+  .k-content .eyebrow { justify-content: center; }
+  .k-content h2 {
+    margin: 22px 0 0; font-weight: 300; font-size: clamp(2.75rem, 8vw, 7.5rem);
+    line-height: .98; letter-spacing: -.035em; text-wrap: balance;
+  }
+  .k-content p:not(.eyebrow) { margin: clamp(20px, 3.5vh, 36px) auto 0; max-width: 33em; font-size: clamp(1rem, 1.25vw, 1.125rem); line-height: 1.75; }
+  .k-light .eyebrow, .k-light p { color: var(--graphite); }
+  .k-dark .eyebrow, .k-dark p { color: var(--ash); }
+  .k-edge { position: absolute; left: 0; right: 0; top: var(--edge); height: 0; z-index: 2; pointer-events: none; }
+  .k-ticks {
+    position: absolute; left: 0; right: 0; top: -5px; height: 10px;
+    background: repeating-linear-gradient(90deg, var(--blend) 0 1px, transparent 1px 48px);
+    mix-blend-mode: difference; opacity: .6;
+  }
+  .k-tag { position: absolute; font: 500 .6875rem/1 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; white-space: nowrap; }
+  .k-tag-up { bottom: 16px; left: max(clamp(16px, 4vw, 48px), env(safe-area-inset-left, 0px)); color: var(--ink); }
+  .k-tag-down { top: 16px; left: max(clamp(16px, 4vw, 48px), env(safe-area-inset-left, 0px)); color: var(--starlight); }
+
+  /* ---------- orbits ---------- */
+  .orbits { padding-block: clamp(120px, 17vh, 200px) clamp(72px, 10vh, 140px); }
+  .orbits-head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 24px 64px; align-items: end; }
+  .orbits-head > p { margin: 0; color: var(--ash); max-width: 28em; line-height: 1.75; }
+  .orbits-body {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(32px, 6vw, 96px);
+    margin-top: clamp(56px, 9vh, 104px); align-items: start;
+  }
+  .orbit-fig { position: sticky; top: max(calc(var(--nav-h) + 24px), calc(50vh - 190px)); margin: 0; }
+  .orbit-svg { width: 100%; height: auto; aspect-ratio: 600 / 350; max-width: 620px; margin-inline: auto; overflow: visible; }
+  .orb-path { fill: none; stroke: var(--dim); stroke-width: 1; vector-effect: non-scaling-stroke; transition: stroke .5s, stroke-width .5s, opacity .5s; }
+  .orb-back { opacity: .55; }
+  .orb-dash { stroke-dasharray: 2 5; }
+  .orb-path.is-active { stroke: var(--starlight); stroke-width: 1.5; opacity: 1; }
+  .sat { fill: var(--starlight); }
+  .sat-halo { fill: none; stroke: var(--starlight); stroke-width: 1; opacity: 0; transition: opacity .4s; vector-effect: non-scaling-stroke; }
+  .sat-g.is-active .sat-halo { opacity: .55; }
+  .sat-g { transition: opacity .3s; }
+  .earth-body, .moon-body { fill: var(--void); stroke: var(--dim); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .earth-limb, .moon-limb { fill: var(--starlight); }
+  .orb-label {
+    font: 500 13px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; fill: var(--starlight);
+    paint-order: stroke; stroke: var(--void); stroke-width: 6px; stroke-linejoin: round;
+  }
+
+  .orbit-list { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--rule); }
+  .orbit-item { position: relative; padding: 26px 0 28px; border-top: 1px solid var(--rule); min-width: 0; }
+  .orbit-item::before { content: ""; position: absolute; left: 0; top: -1px; height: 1px; width: 0; background: var(--starlight); transition: width .8s var(--ease); }
+  .orbit-item.is-active::before { width: 100%; }
+  .orbit-meta {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px;
+    font: 500 .75rem/1.2 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ash);
+    font-variant-numeric: tabular-nums;
+  }
+  .orbit-cat { border: 1px solid var(--dim); padding: 5px 8px 4px; letter-spacing: .16em; transition: border-color .4s, color .4s; }
+  .orbit-item h3 { margin: 14px 0 0; font-weight: 400; font-size: clamp(1.375rem, 2vw, 1.75rem); letter-spacing: -.01em; line-height: 1.2; color: var(--ash); transition: color .4s; }
+  .orbit-item p { margin: 10px 0 0; color: var(--ash); max-width: 34em; line-height: 1.7; font-size: .9375rem; transition: color .4s; }
+  .orbit-item.is-active h3, .orbit-item.is-active .orbit-alt { color: var(--starlight); }
+  .orbit-item.is-active p { color: var(--mist); }
+  .orbit-item.is-active .orbit-cat { border-color: var(--starlight); color: var(--starlight); }
+
+  /* ---------- parameters ---------- */
+  .params-grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: clamp(40px, 6vh, 64px) 0 0;
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  }
+  .param { display: flex; flex-direction: column; gap: 16px; padding: 40px 24px 36px; border-left: 1px solid var(--rule); min-width: 0; }
+  .param:first-child { border-left: 0; padding-left: 0; }
+  .param-num {
+    order: -1; margin: 0; font-weight: 200; font-size: clamp(3rem, 6.4vw, 5.75rem); line-height: .9;
+    letter-spacing: -.04em; font-variant-numeric: tabular-nums; color: var(--starlight); white-space: nowrap;
+  }
+  .param-label { font: 500 .75rem/1.45 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ash); }
+
+  /* ---------- sequence ---------- */
+  .seq-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 40px 64px; }
+  .cd { min-width: 0; }
+  .cd-cap, .cd-when { margin: 0; font: 500 .75rem/1.4 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ash); }
+  .cd-row { display: flex; gap: clamp(14px, 2.6vw, 36px); margin: 14px 0 14px; font-variant-numeric: tabular-nums; }
+  .cd-unit { display: flex; flex-direction: column; gap: 10px; }
+  .cd-num { font-weight: 200; font-size: clamp(2.75rem, 5.8vw, 5.25rem); line-height: .9; letter-spacing: -.03em; color: var(--starlight); }
+  .cd-lab { font: 500 .6875rem var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ash); }
+  .timeline-wrap { position: relative; margin-top: clamp(56px, 9vh, 96px); }
+  .timeline { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .timeline-wrap::before { content: ""; position: absolute; left: 0; right: 0; top: 5px; height: 1px; background: var(--rule); }
+  .timeline-progress { position: absolute; left: 0; top: 5px; height: 1px; width: 0; background: var(--starlight); transition: width .8s var(--ease), height .8s var(--ease); }
+  .phase { position: relative; padding: 34px 24px 0 0; min-width: 0; }
+  .phase::before {
+    content: ""; position: absolute; top: 0; left: 0; width: 11px; height: 11px; border-radius: 50%;
+    border: 1px solid var(--ash); background: var(--void); transition: background-color .4s, border-color .4s, box-shadow .4s;
+  }
+  .phase.is-done::before { background: var(--starlight); border-color: var(--starlight); }
+  .phase.is-current::before { box-shadow: 0 0 0 6px var(--halo); }
+  .phase.is-next::before { border-color: var(--starlight); }
+  .phase-t { margin: 0; font: 500 .875rem/1.2 var(--font-mono); letter-spacing: .1em; color: var(--starlight); }
+  .phase.is-next .phase-t::after { content: " · Next"; color: var(--ash); }
+  .phase-date { margin: 6px 0 0; font: 400 .75rem/1.4 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ash); font-variant-numeric: tabular-nums; }
+  .phase h3 { margin: 22px 0 8px; font-weight: 500; font-size: 1.125rem; line-height: 1.3; color: var(--starlight); }
+  .phase p:last-child { margin: 0; font-size: .9375rem; line-height: 1.65; color: var(--ash); }
+
+  /* ---------- final ---------- */
+  .final { padding-block: clamp(120px, 18vh, 220px) clamp(96px, 13vh, 150px); text-align: center; }
+  .final-eclipse {
+    --d: min(62vw, 380px);
+    position: relative; width: var(--d); height: var(--d); margin: 0 auto clamp(44px, 7vh, 72px);
+    border-radius: 50%; background: var(--void);
+    box-shadow: inset calc(var(--d) * -.05) 0 0 0 var(--starlight), 0 0 calc(var(--d) * .1) 0 var(--glow-1);
+  }
+  .final-eclipse::before {
+    content: ""; position: absolute; inset: -22%; border-radius: 50%; z-index: -1;
+    background: radial-gradient(circle, var(--glow-1) 0 38%, var(--glow-2) 52%, transparent 70%);
+  }
+  .final-eclipse::after {
+    content: ""; position: absolute; width: 24%; height: 24%; right: 3%; top: 5%; border-radius: 50%;
+    background: radial-gradient(circle, var(--starlight) 0 9%, var(--glint-1) 20%, var(--glint-0) 62%);
+  }
+  .final .eyebrow { justify-content: center; }
+  .final-title {
+    margin: 24px auto 0; font-weight: 300; font-size: clamp(2.25rem, 5.4vw, 4.75rem);
+    line-height: 1.04; letter-spacing: -.03em; text-wrap: balance; max-width: 14em;
+  }
+  .final-note { margin: 26px auto 0; max-width: 32em; color: var(--ash); font-size: 1.0625rem; }
+  .final-cta { margin-top: 34px; display: flex; justify-content: center; }
+  .egg { margin: 44px 0 0; font: 500 .6875rem/1.5 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ash); }
+
+  /* ---------- footer ---------- */
+  .footer { position: relative; z-index: 1; border-top: 1px solid var(--rule); padding-block: 40px 28px; overflow: hidden; }
+  .footer-row {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 32px;
+    font: 500 .6875rem/1.4 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ash);
+  }
+  .footer-row p { margin: 0; }
+  .footer-row a { color: var(--starlight); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+  .footer-row a:hover { text-decoration: underline; text-underline-offset: 6px; }
+  .footer-mark {
+    margin: 36px 0 0; text-align: center; white-space: nowrap; user-select: none;
+    font-weight: 800; font-size: min(14.6vw, 13.5rem); line-height: .8; letter-spacing: -.01em;
+    background: linear-gradient(180deg, var(--mark-top) 0%, var(--mark-bottom) 94%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+  }
+  @media (forced-colors: active) { .footer-mark { display: none; } }
+
+  /* ---------- load sequence & ambient motion ---------- */
+  @media (prefers-reduced-motion: no-preference) {
+    .js .presenter { animation: fade-down 1s var(--ease) .1s both; }
+    .js .hero-art { animation: art-in 1.8s var(--ease) both; }
+    .js .kicker { animation: fade-up 1s var(--ease) .35s both; }
+    .js .title .ch { animation: rise 1.1s var(--ease) both; animation-delay: calc(.5s + var(--i, 0) * 60ms); }
+    .js .title .eclipse {
+      animation: rise 1.1s var(--ease) both, phase 1.8s var(--ease) both;
+      animation-delay: calc(.5s + var(--i, 0) * 60ms), 1s;
+    }
+    .js .hero-meta { animation: fade-up 1s var(--ease) 1.15s both; }
+    .js .tx-dot { animation: pulse 1.8s ease-in-out infinite; }
+    .js .final-eclipse::before { animation: breathe 7s ease-in-out infinite; }
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(.42em); } to { opacity: 1; transform: none; } }
+  @keyframes fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes fade-down { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+  @keyframes art-in { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: none; } }
+  @keyframes phase { from { box-shadow: inset -.015em 0 0 0 var(--ink); } to { box-shadow: inset -.115em 0 0 0 var(--ink); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .2; } }
+  @keyframes breathe { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 1080px) {
+    .nav-links { gap: 22px; }
+  }
+  @media (max-width: 900px) {
+    .nav-links-wrap { display: none; }
+    .nav-alt { margin-left: auto; }
+    .tx-grid { grid-template-columns: 1fr; }
+    .tx-panel { position: static; order: 2; }
+    .orbits-head { grid-template-columns: 1fr; }
+    .orbits-body { grid-template-columns: 1fr; gap: 0; }
+    .orbit-fig {
+      top: calc(var(--nav-h) + env(safe-area-inset-top, 0px)); z-index: 2; background: var(--void);
+      padding: 4px 0 18px; border-bottom: 1px solid var(--rule);
+    }
+    .orbit-svg { width: 100%; }
+    .orbit-list { border-bottom: 0; padding-bottom: 12vh; }
+    .orbit-item:first-child { border-top: 0; }
+    .timeline { grid-template-columns: 1fr; }
+    .timeline-wrap::before { left: 5px; right: auto; top: 0; bottom: 0; width: 1px; height: auto; }
+    .timeline-progress { left: 5px; top: 0; width: 1px; height: 0; }
+    .phase { padding: 0 0 40px 40px; }
+    .phase:last-child { padding-bottom: 0; }
+    .phase h3 { margin-top: 14px; }
+  }
+  @media (max-width: 760px) {
+    .hero-meta { grid-template-columns: 1fr; gap: 22px; text-align: center; }
+    .hero-meta-r { text-align: center; }
+    .hero-meta-l { order: 2; }
+    .hero-meta-r { order: 3; }
+    .params-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .param { padding: 32px 16px 28px; }
+    .param:nth-child(odd) { border-left: 0; padding-left: 0; }
+    .param:nth-child(n+3) { border-top: 1px solid var(--rule); }
+    .footer-row { justify-content: center; text-align: center; }
+    .k-tag { display: none; }
+  }
+  @media (max-width: 600px) {
+    .title { font-size: 14vw; --track-title: .22em; }
+    .title-vis { row-gap: .1em; }
+    .cd-row { gap: 12px; }
+    .orb-label { font-size: 18px; }
+  }
+  @media (max-width: 360px) {
+    .nav-alt .alt-pre { display: none; }
+  }
+</style>
+<script>document.documentElement.classList.add('js');</script>
+
+<!-- TRANSMISSION 0x01 // Q3liZXJIWHtzaWduYWxfYWNxdWlyZWR9 -->
+
+<a class="skip" href="#main">Skip to content</a>
+<canvas class="sky" id="sky" aria-hidden="true"></canvas>
+
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a class="nav-brand" href="#top" aria-label="NullOrigin, back to top">NULLORIGIN</a>
+    <nav aria-label="Sections" class="nav-links-wrap">
+      <ul class="nav-links">
+        <li><a href="#transmission">Transmission</a></li>
+        <li><a href="#orbits">Orbits</a></li>
+        <li><a href="#sequence">Sequence</a></li>
+      </ul>
+    </nav>
+    <span class="nav-alt" aria-hidden="true"><span class="alt-pre">Alt </span><span data-alt>0</span> km</span>
+    <a class="nav-cta" href="#register">Register</a>
+  </div>
+</header>
+
+<aside class="altimeter" aria-hidden="true">
+  <div class="alt-scale" data-alt-scale>
+    <div class="alt-head">
+      <div class="alt-cap">ALTITUDE</div>
+      <div class="alt-read"><span data-alt>0</span><small>KM</small></div>
+      <div class="alt-layer" data-layer>Troposphere</div>
+    </div>
+    <span class="alt-marker" data-alt-marker></span>
+  </div>
+</aside>
+
+<main id="main" tabindex="-1">
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero on-paper" id="top" aria-labelledby="title">
+    <div class="wrap">
+      <p class="presenter"><span class="presenter-brand">NULLORIGIN</span><span class="presenter-sub">PRESENTS</span></p>
+
+      <figure class="hero-art">
+        <img src="assets/beyond-earth-art.webp"
+             srcset="assets/beyond-earth-art-640.webp 640w, assets/beyond-earth-art.webp 1076w"
+             sizes="(max-width: 700px) 92vw, 620px"
+             width="1076" height="900" fetchpriority="high" decoding="async"
+             alt="An astronaut's helmet dissolving into the Moon, Earth at night and drifting clouds while a satellite passes overhead.">
+      </figure>
+
+      <p class="kicker">Something is coming from</p>
+
+      <h1 class="title" id="title">
+        <span class="sr-only">Beyond Earth</span>
+        <span class="title-vis" aria-hidden="true">
+          <span class="w"><span class="ch" style="--i:0">B</span><span class="ch" style="--i:1">E</span><span class="ch" style="--i:2">Y</span><span class="ch eclipse" style="--i:3"></span><span class="ch" style="--i:4">N</span><span class="ch" style="--i:5">D</span></span>
+          <span class="w w-earth"><span class="ch" style="--i:6">E</span><span class="ch lambda" style="--i:7"><svg viewBox="0 0 688 700" focusable="false"><defs><linearGradient id="lam-r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b5f68"/><stop offset=".8" stop-color="#0b0b0d"/></linearGradient><linearGradient id="lam-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9acb3"/><stop offset=".85" stop-color="#2a2c31"/></linearGradient></defs><polygon fill="url(#lam-l)" points="4,700 344,0 344,206 104,700"/><polygon fill="url(#lam-r)" points="343,0 684,700 584,700 343,206"/></svg></span><span class="ch" style="--i:8">R</span><span class="ch" style="--i:9">T</span><span class="ch" style="--i:10">H</span></span>
+        </span>
+      </h1>
+
+      <div class="hero-meta">
+        <p class="hero-meta-l">Space CTF · 2026<strong>48-hour Jeopardy</strong></p>
+        <div class="hero-cta">
+          <a class="btn btn-ink" href="#register">Register your crew</a>
+          <a class="text-link" href="#transmission">Read the transmission</a>
+        </div>
+        <p class="hero-meta-r">Ignition<strong data-countdown>12 Dec 2026 · 10:00 IST</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TRANSMISSION ===================== -->
+  <section class="on-paper section-pad" id="transmission" aria-labelledby="tx-title">
+    <div class="wrap">
+      <p class="eyebrow"><span data-scramble>ALT 12 KM</span><span data-scramble>Stratosphere</span></p>
+      <div class="tx-grid">
+        <div class="tx-panel">
+          <p class="tx-status"><span>Incoming transmission</span><span class="tx-live"><span class="tx-dot"></span>Receiving</span></p>
+          <canvas class="tx-wave" aria-hidden="true"></canvas>
+          <dl class="tx-list">
+            <dt>Origin</dt><dd data-scramble>UNKNOWN</dd>
+            <dt>Band</dt><dd data-scramble>X · 8.4 GHz</dd>
+            <dt>Signal</dt><dd data-scramble>−127 dBm</dd>
+            <dt>Frames</dt><dd data-scramble>CCSDS</dd>
+            <dt>Status</dt><dd data-scramble>ENCRYPTED</dd>
+          </dl>
+        </div>
+        <div class="tx-copy">
+          <h2 id="tx-title" data-sweep>A signal is coming in from beyond Earth.</h2>
+          <p class="tx-lead" data-sweep>It is encrypted, it is getting stronger, and it answers to whoever decodes it first.</p>
+          <p class="tx-body">Space CTF is a 48-hour Jeopardy-style capture-the-flag built around the systems that keep satellites running: mission control software, radio links, flight computers and the orbital mechanics that tie them together. Start at the ground station, follow the signal up, and capture every flag between here and the Moon.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== KÁRMÁN LINE ===================== -->
+  <section class="karman" id="karman" aria-labelledby="k-title">
+    <div class="k-stage">
+      <div class="k-layer k-dark" aria-hidden="true">
+        <div class="k-content">
+          <p class="eyebrow"><span>ALT 100 KM</span><span>Kármán line</span></p>
+          <h2>The sky ends at 100&nbsp;km.</h2>
+          <p>Past the Kármán line, the conventional edge of space, satellites, ground stations and radio links form a network that runs on trust. Your job is to find where that trust breaks.</p>
+        </div>
+      </div>
+      <div class="k-layer k-light">
+        <div class="k-content">
+          <p class="eyebrow"><span>ALT 100 KM</span><span>Kármán line</span></p>
+          <h2 id="k-title">The sky ends at 100&nbsp;km.</h2>
+          <p>Past the Kármán line, the conventional edge of space, satellites, ground stations and radio links form a network that runs on trust. Your job is to find where that trust breaks.</p>
+        </div>
+      </div>
+      <div class="k-edge" aria-hidden="true">
+        <span class="k-ticks"></span>
+        <span class="k-tag k-tag-up">↑ Atmosphere</span>
+        <span class="k-tag k-tag-down">↓ Space</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ORBITS ===================== -->
+  <section class="orbits on-void" id="orbits" aria-labelledby="orbits-title">
+    <div class="wrap">
+      <div class="orbits-head">
+        <div>
+          <p class="eyebrow"><span data-scramble>ALT 408 KM</span><span data-scramble>Low Earth orbit</span></p>
+          <h2 class="sec-title" id="orbits-title">Seven orbits, from the ground station to the Moon.</h2>
+        </div>
+        <p>Challenges are grouped by where they sit in a real space mission. Start on the ground and work your way out.</p>
+      </div>
+
+      <div class="orbits-body">
+        <figure class="orbit-fig" aria-hidden="true">
+          <svg class="orbit-svg" id="orbit-svg" viewBox="-300 -175 600 350" focusable="false"></svg>
+        </figure>
+
+        <ol class="orbit-list">
+          <li class="orbit-item is-active" data-short="Ground segment">
+            <div class="orbit-meta"><span class="orbit-alt">0 km · Ground station</span><span class="orbit-cat">Web</span></div>
+            <h3>Ground Segment</h3>
+            <p>Mission-control dashboards, operator logins and telemetry APIs. Find the bug that hands you the command console.</p>
+          </li>
+          <li class="orbit-item" data-short="Comms link">
+            <div class="orbit-meta"><span class="orbit-alt">8.4 GHz · X-band</span><span class="orbit-cat">Crypto</span></div>
+            <h3>Comms Link</h3>
+            <p>Telecommand ciphers, CCSDS frames and key exchanges between ground and orbit. Break the crypto and forge a command the satellite will trust.</p>
+          </li>
+          <li class="orbit-item" data-short="Signals">
+            <div class="orbit-meta"><span class="orbit-alt">1200 baud · Downlink</span><span class="orbit-cat">Forensics</span></div>
+            <h3>Signals</h3>
+            <p>Packet captures, audio from a satellite overpass and corrupted downlink files. Pull the flag out of the noise.</p>
+          </li>
+          <li class="orbit-item" data-short="Flight software">
+            <div class="orbit-meta"><span class="orbit-alt">408 km · LEO</span><span class="orbit-cat">Reverse</span></div>
+            <h3>Flight Software</h3>
+            <p>Onboard computer images, a bootloader that hides more than it should, and firmware that talks over I²C. Take it apart.</p>
+          </li>
+          <li class="orbit-item" data-short="Payload">
+            <div class="orbit-meta"><span class="orbit-alt">550 km · LEO</span><span class="orbit-cat">Pwn</span></div>
+            <h3>Payload</h3>
+            <p>Camera and payload controllers with memory to corrupt and control flow to take. Get a shell on something moving at 7.6&nbsp;km/s.</p>
+          </li>
+          <li class="orbit-item" data-short="Astrodynamics">
+            <div class="orbit-meta"><span class="orbit-alt">20,200 km · MEO</span><span class="orbit-cat">Misc</span></div>
+            <h3>Astrodynamics</h3>
+            <p>Two-line element sets, visibility windows and az-el tracking. Work out where the satellite is before it drops below the horizon.</p>
+          </li>
+          <li class="orbit-item" data-short="Deep space">
+            <div class="orbit-meta"><span class="orbit-alt">384,400 km · Lunar</span><span class="orbit-cat">OSINT</span></div>
+            <h3>Deep Space</h3>
+            <p>Launch records, ground-station locations and orbital catalogues. Track down what was meant to stay out of sight.</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PARAMETERS ===================== -->
+  <section class="on-void section-pad" id="parameters" aria-labelledby="params-title">
+    <div class="wrap">
+      <p class="eyebrow"><span data-scramble>ALT 20,200 KM</span><span data-scramble>Medium Earth orbit</span></p>
+      <h2 class="sec-title" id="params-title">Mission parameters</h2>
+      <dl class="params-grid">
+        <div class="param"><dt class="param-label">Hours on the clock</dt><dd class="param-num" data-count="48">48</dd></div>
+        <div class="param"><dt class="param-label">Challenges</dt><dd class="param-num" data-count="25" data-suffix="+">25+</dd></div>
+        <div class="param"><dt class="param-label">Prize pool · ₹1,00,000</dt><dd class="param-num">₹1L</dd></div>
+        <div class="param"><dt class="param-label">Challenge orbits</dt><dd class="param-num" data-count="7">7</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ===================== SEQUENCE ===================== -->
+  <section class="on-void section-pad" id="sequence" aria-labelledby="seq-title">
+    <div class="wrap">
+      <div class="seq-head">
+        <div>
+          <p class="eyebrow"><span data-scramble>ALT 35,786 KM</span><span data-scramble>Geostationary orbit</span></p>
+          <h2 class="sec-title" id="seq-title">Launch sequence</h2>
+        </div>
+        <div class="cd">
+          <p class="cd-cap" data-cd-cap>T-minus to ignition</p>
+          <div class="cd-row" role="timer" aria-label="Time remaining until ignition">
+            <div class="cd-unit"><span class="cd-num" data-cd="d">00</span><span class="cd-lab">Days</span></div>
+            <div class="cd-unit"><span class="cd-num" data-cd="h">00</span><span class="cd-lab">Hours</span></div>
+            <div class="cd-unit"><span class="cd-num" data-cd="m">00</span><span class="cd-lab">Min</span></div>
+            <div class="cd-unit"><span class="cd-num" data-cd="s">00</span><span class="cd-lab">Sec</span></div>
+          </div>
+          <p class="cd-when" data-cd-when>12 Dec 2026 · 10:00 IST</p>
+        </div>
+      </div>
+
+      <div class="timeline-wrap">
+        <ol class="timeline">
+          <li class="phase" data-phase="0">
+            <p class="phase-t">T–30 D</p>
+            <p class="phase-date" data-phase-date="0">12 Nov 2026</p>
+            <h3>Registration opens</h3>
+            <p>Form your crew and claim a callsign.</p>
+          </li>
+          <li class="phase" data-phase="1">
+            <p class="phase-t">T–7 D</p>
+            <p class="phase-date" data-phase-date="1">05 Dec 2026</p>
+            <h3>Mission briefing</h3>
+            <p>Rules, scoring and the first transmission go out to every registered crew.</p>
+          </li>
+          <li class="phase" data-phase="2">
+            <p class="phase-t">T–0</p>
+            <p class="phase-date" data-phase-date="2">12 Dec 2026 · 10:00 IST</p>
+            <h3>Ignition</h3>
+            <p>The scoreboard opens and the first challenges unlock.</p>
+          </li>
+          <li class="phase" data-phase="3">
+            <p class="phase-t">T+48 H</p>
+            <p class="phase-date" data-phase-date="3">14 Dec 2026 · 10:00 IST</p>
+            <h3>Signal lost</h3>
+            <p>Flag submissions close and the scoreboard freezes.</p>
+          </li>
+          <li class="phase" data-phase="4">
+            <p class="phase-t">T+7 D</p>
+            <p class="phase-date" data-phase-date="4">19 Dec 2026</p>
+            <h3>Debrief</h3>
+            <p>Writeups go public and the winning crews are announced.</p>
+          </li>
+        </ol>
+        <span class="timeline-progress" data-progress aria-hidden="true"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FINAL ===================== -->
+  <section class="final on-void" id="register" aria-labelledby="final-title">
+    <div class="wrap">
+      <div class="final-eclipse" aria-hidden="true"></div>
+      <p class="eyebrow"><span data-scramble>ALT 384,400 KM</span><span data-scramble>Lunar distance</span></p>
+      <h2 class="final-title" id="final-title">Something is coming. Be the first to answer it.</h2>
+      <p class="final-note" data-reg-note>Registration opens 12 Nov 2026.</p>
+      <div class="final-cta"><a class="btn btn-light" href="#sequence" data-reg-cta>See the launch sequence</a></div>
+      <p class="egg">The first flag is already hidden on this page.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer on-void">
+  <div class="wrap">
+    <div class="footer-row">
+      <p>© 2026 NullOrigin</p>
+      <p>Space CTF · Beyond Earth</p>
+      <a href="#top">Back to Earth ↑</a>
+    </div>
+    <p class="footer-mark" aria-hidden="true">NULLORIGIN</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ================= EVENT CONFIG — edit these for the real event ================= */
+  const CONFIG = {
+    ignition: '2026-12-12T10:00:00+05:30', // CTF start time in IST (placeholder date)
+    durationHours: 48,
+    registerUrl: '' // paste the registration link here once it is live
+  };
+  /* ================================================================================ */
+
+  const root = document.documentElement;
+  if (!root.lang) root.lang = 'en';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+  const HAS_IO = 'IntersectionObserver' in window;
+  const mqReduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  let reduce = !!(mqReduce && mqReduce.matches);
+  const css = getComputedStyle(root);
+  const COLOR_STAR = css.getPropertyValue('--starlight').trim() || '#f3f3f1';
+  const COLOR_INK = css.getPropertyValue('--ink').trim() || '#0b0b0d';
+  const COLOR_HAIR = css.getPropertyValue('--hairline').trim() || '#e2e3e6';
+
+  /* ---------- animation scheduler ---------- */
+  const loops = new Set();
+  let rafId = 0, scrollDirty = true;
+  function frame(t) {
+    rafId = 0;
+    if (scrollDirty) { scrollDirty = false; onScrollFrame(); }
+    loops.forEach(fn => fn(t));
+    if (loops.size && !document.hidden) rafId = requestAnimationFrame(frame);
+  }
+  const kick = () => { if (!rafId) rafId = requestAnimationFrame(frame); };
+  const addLoop = fn => { loops.add(fn); kick(); };
+  const removeLoop = fn => { loops.delete(fn); };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
+  function watch(el, cb, rootMargin) {
+    if (!el) return;
+    if (!HAS_IO) { cb(true); return; }
+    new IntersectionObserver(es => es.forEach(e => cb(e.isIntersecting)), { rootMargin: rootMargin || '0px' }).observe(el);
+  }
+
+  /* ---------- time, countdown, phases, registration ---------- */
+  const DAY = 864e5, HOUR = 36e5;
+  const T0 = new Date(CONFIG.ignition).getTime();
+  const HAS_DATE = Number.isFinite(T0);
+  const DUR = Number(CONFIG.durationHours) > 0 ? Number(CONFIG.durationHours) : 48;
+  const T_END = T0 + DUR * HOUR;
+  const PHASE_AT = [T0 - 30 * DAY, T0 - 7 * DAY, T0, T_END, T0 + 7 * DAY];
+  const PHASE_TIME = [false, false, true, true, false];
+  let fmtDate, fmtTime;
+  try {
+    fmtDate = new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
+    fmtTime = new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
+  } catch (e) {
+    fmtDate = { format: d => d.toDateString() };
+    fmtTime = { format: d => d.toTimeString().slice(0, 5) };
+  }
+  const fd = ms => fmtDate.format(new Date(ms));
+  const ft = ms => fmtTime.format(new Date(ms));
+  const pad = n => String(n).padStart(2, '0');
+  const parts = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return { d: Math.floor(s / 86400), h: Math.floor(s % 86400 / 3600), m: Math.floor(s % 3600 / 60), s: s % 60 }; };
+  const setText = (el, txt) => { if (el && el.textContent !== txt) el.textContent = txt; };
+
+  const cdInline = $$('[data-countdown]');
+  const cdNums = { d: $('[data-cd="d"]'), h: $('[data-cd="h"]'), m: $('[data-cd="m"]'), s: $('[data-cd="s"]') };
+  const cdCap = $('[data-cd-cap]'), cdWhen = $('[data-cd-when]');
+  const phases = $$('.phase');
+  const progress = $('[data-progress]');
+  const regNote = $('[data-reg-note]'), regCta = $('[data-reg-cta]');
+  let currentPhase = -2, phaseFrac = 0;
+
+  if (HAS_DATE) {
+    $$('[data-phase-date]').forEach(el => {
+      const i = Number(el.dataset.phaseDate);
+      setText(el, fd(PHASE_AT[i]) + (PHASE_TIME[i] ? ' · ' + ft(PHASE_AT[i]) + ' IST' : ''));
+    });
+    setText(cdWhen, fd(T0) + ' · ' + ft(T0) + ' IST');
+  } else {
+    $$('[data-phase-date]').forEach(el => setText(el, 'Date TBA'));
+    setText(cdWhen, 'Date to be announced');
+  }
+
+  function renderReg(now) {
+    if (!regNote || !regCta) return;
+    let note, text, href, external = false;
+    if (!HAS_DATE) { note = 'Dates will be announced soon.'; text = 'See the launch sequence'; href = '#sequence'; }
+    else if (now >= T_END) { note = 'This mission is complete. Results go out at debrief.'; text = 'See the launch sequence'; href = '#sequence'; }
+    else if (CONFIG.registerUrl) { note = 'Ignition on ' + fd(T0) + ' at ' + ft(T0) + ' IST.'; text = 'Register your crew'; href = CONFIG.registerUrl; external = true; }
+    else if (now < PHASE_AT[0]) { note = 'Registration opens ' + fd(PHASE_AT[0]) + '.'; text = 'See the launch sequence'; href = '#sequence'; }
+    else { note = 'Registration link drops soon. Ignition on ' + fd(T0) + '.'; text = 'See the launch sequence'; href = '#sequence'; }
+    setText(regNote, note);
+    setText(regCta, text);
+    if (regCta.getAttribute('href') !== href) regCta.setAttribute('href', href);
+    if (external) { regCta.target = '_blank'; regCta.rel = 'noopener'; } else { regCta.removeAttribute('target'); regCta.removeAttribute('rel'); }
+  }
+
+  function renderPhases(now) {
+    let cur = -1;
+    if (HAS_DATE) for (let i = 0; i < PHASE_AT.length; i++) if (now >= PHASE_AT[i]) cur = i;
+    const frac = HAS_DATE && cur >= 0 && cur < PHASE_AT.length - 1 ? clamp((now - PHASE_AT[cur]) / (PHASE_AT[cur + 1] - PHASE_AT[cur]), 0, 1) : 0;
+    if (cur === currentPhase && Math.abs(frac - phaseFrac) < 0.002) return;
+    currentPhase = cur; phaseFrac = frac;
+    phases.forEach((li, i) => {
+      li.classList.toggle('is-done', i <= cur);
+      li.classList.toggle('is-current', i === cur);
+      li.classList.toggle('is-next', HAS_DATE && i === cur + 1);
+    });
+    placeProgress();
+  }
+  const mqVertical = window.matchMedia ? window.matchMedia('(max-width: 900px)') : null;
+  function placeProgress() {
+    if (!progress || !phases.length) return;
+    const vertical = !!(mqVertical && mqVertical.matches);
+    const pos = phases.map(li => vertical ? li.offsetTop + 5 : li.offsetLeft + 5);
+    let v = 0;
+    if (currentPhase >= 0) {
+      v = pos[currentPhase];
+      if (currentPhase < pos.length - 1) v += (pos[currentPhase + 1] - pos[currentPhase]) * phaseFrac;
+      else v = vertical ? phases[0].parentElement.offsetHeight : phases[0].parentElement.offsetWidth;
+    }
+    if (vertical) { progress.style.width = ''; progress.style.height = v + 'px'; }
+    else { progress.style.height = ''; progress.style.width = v + 'px'; }
+  }
+
+  function tick() {
+    const now = Date.now();
+    let inline, cap, rem = 0;
+    if (!HAS_DATE) { inline = 'Date TBA'; cap = 'Ignition date to be announced'; }
+    else if (now < T0) { const p = parts(T0 - now); rem = T0 - now; inline = 'T– ' + pad(p.d) + 'd ' + pad(p.h) + 'h ' + pad(p.m) + 'm ' + pad(p.s) + 's'; cap = 'T-minus to ignition'; }
+    else if (now < T_END) { const p = parts(T_END - now); rem = T_END - now; inline = 'Live · ' + pad(p.d * 24 + p.h) + ':' + pad(p.m) + ':' + pad(p.s) + ' left'; cap = 'Mission live · time remaining'; }
+    else { inline = 'Mission complete'; cap = 'Mission complete'; }
+    cdInline.forEach(el => setText(el, inline));
+    setText(cdCap, cap);
+    const p = parts(rem);
+    setText(cdNums.d, pad(p.d)); setText(cdNums.h, pad(p.h)); setText(cdNums.m, pad(p.m)); setText(cdNums.s, pad(p.s));
+    renderPhases(now);
+    renderReg(now);
+    setTimeout(tick, 1000 - (Date.now() % 1000) + 5);
+  }
+
+  /* ---------- altitude ---------- */
+  const MOON = 384400;
+  const LMAX = Math.log10(1 + MOON);
+  const altEls = $$('[data-alt]');
+  const layerEl = $('[data-layer]');
+  const marker = $('[data-alt-marker]');
+  const scale = $('[data-alt-scale]');
+  const nf = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+  const TICKS = [[0, '0 km'], [12, ''], [50, ''], [100, 'Kármán'], [408, 'ISS'], [2000, ''], [20200, 'GPS'], [35786, 'GEO'], [MOON, 'Moon']];
+  if (scale) TICKS.forEach(([a, label]) => {
+    const t = document.createElement('span');
+    t.className = 'alt-tick' + (label ? '' : ' minor');
+    t.style.setProperty('--f', (Math.log10(1 + a) / LMAX).toFixed(4));
+    t.textContent = label;
+    scale.insertBefore(t, marker);
+  });
+  function layerName(a) {
+    if (a < 12) return 'Troposphere';
+    if (a < 50) return 'Stratosphere';
+    if (a < 85) return 'Mesosphere';
+    if (a >= 97 && a <= 103) return 'Kármán line';
+    if (a < 160) return 'Thermosphere';
+    if (a < 2000) return 'Low Earth orbit';
+    if (a < 35000) return 'Medium Earth orbit';
+    if (a <= 36500) return 'Geostationary';
+    if (a < 380000) return 'Cislunar space';
+    return 'Lunar distance';
+  }
+  let anchors = [[0, 0], [1, LMAX]];
+  let lastAlt = -1;
+  function altitudeAt(y) {
+    if (y <= anchors[0][0]) return 0;
+    for (let i = 1; i < anchors.length; i++) {
+      if (y <= anchors[i][0]) {
+        const [x0, l0] = anchors[i - 1], [x1, l1] = anchors[i];
+        return Math.pow(10, lerp(l0, l1, (y - x0) / (x1 - x0))) - 1;
+      }
+    }
+    return MOON;
+  }
+  function renderAlt(a) {
+    const r = Math.round(a);
+    if (r === lastAlt) return;
+    lastAlt = r;
+    const txt = nf.format(r);
+    altEls.forEach(el => setText(el, txt));
+    setText(layerEl, layerName(a));
+    if (marker) marker.style.setProperty('--m', (Math.log10(1 + a) / LMAX).toFixed(4));
+  }
+
+  /* ---------- layout metrics ---------- */
+  const hero = $('#top'), presenter = $('.presenter'), nav = $('#nav');
+  const art = $('.hero-art img');
+  const kSec = $('#karman'), kStage = $('.k-stage');
+  let heroH = 1, presenterBottom = 0, kTop = 0, kRange = 1, navH = 64;
+  function measure() {
+    const y = window.scrollY, vh = window.innerHeight;
+    const top = el => el.getBoundingClientRect().top + y;
+    heroH = hero.offsetHeight || 1;
+    navH = nav ? nav.offsetHeight : 64;
+    presenterBottom = presenter.getBoundingClientRect().bottom + y;
+    kTop = top(kSec);
+    kRange = Math.max(1, kSec.offsetHeight - vh);
+    const maxS = Math.max(1, root.scrollHeight - vh);
+    const tx = $('#transmission'), ob = $('#orbits'), pr = $('#parameters'), sq = $('#sequence'), fn = $('#register');
+    const raw = [
+      [0, 0],
+      [top(tx) - vh * 0.35, 12],
+      [kTop, 85],
+      [kTop + kRange * 0.5, 100],
+      [kTop + kRange, 160],
+      [top(ob) + ob.offsetHeight * 0.45 - vh * 0.5, 408],
+      [top(pr) + pr.offsetHeight * 0.5 - vh * 0.5, 20200],
+      [top(sq) - vh * 0.3, 35786],
+      [top(sq) + sq.offsetHeight - vh * 0.7, 35786],
+      [Math.min(maxS, top(fn) + fn.offsetHeight * 0.5 - vh * 0.5), MOON]
+    ];
+    anchors = [];
+    let last = -Infinity;
+    raw.forEach(([x, a]) => { const xx = Math.max(x, last + 1); anchors.push([xx, Math.log10(1 + a)]); last = xx; });
+    lastAlt = -1;
+    placeProgress();
+  }
+
+  /* ---------- hero parallax + nav brand ---------- */
+  let mx = 0, my = 0, cx = 0, cy = 0;
+  function updateNav(y) {
+    if (!nav) return;
+    let dark;
+    if (y < kTop) dark = false;
+    else if (y > kTop + kRange) dark = true;
+    else {
+      const p = clamp((y - kTop) / kRange, 0, 1);
+      dark = (1 - smooth(0.06, 0.94, p)) * window.innerHeight < navH * 0.5;
+    }
+    nav.classList.toggle('show-brand', y > presenterBottom - 40);
+    nav.classList.toggle('is-scrolled', y > 8);
+    nav.classList.toggle('is-dark', dark);
+  }
+  function updateHero(y) {
+    if (!art) return;
+    if (reduce) { art.style.removeProperty('--py'); art.style.removeProperty('--px'); art.style.removeProperty('--ps'); return; }
+    if (y > heroH + 80) return;
+    const k = clamp(y / heroH, 0, 1);
+    art.style.setProperty('--py', (y * 0.12 + cy).toFixed(2) + 'px');
+    art.style.setProperty('--px', cx.toFixed(2) + 'px');
+    art.style.setProperty('--ps', (1 + k * 0.05).toFixed(4));
+  }
+  function easeMouse() {
+    cx += (mx - cx) * 0.08; cy += (my - cy) * 0.08;
+    updateHero(window.scrollY);
+    if (Math.abs(mx - cx) < 0.05 && Math.abs(my - cy) < 0.05) removeLoop(easeMouse);
+  }
+  if (hero && window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
+    hero.addEventListener('pointermove', e => {
+      if (reduce) return;
+      const r = hero.getBoundingClientRect();
+      mx = ((e.clientX - r.left) / r.width - 0.5) * 18;
+      my = ((e.clientY - r.top) / r.height - 0.5) * 12;
+      addLoop(easeMouse);
+    });
+    hero.addEventListener('pointerleave', () => { mx = 0; my = 0; addLoop(easeMouse); });
+  }
+
+  /* ---------- kármán line ---------- */
+  function updateKarman(y) {
+    if (!kStage) return;
+    const p = clamp((y - kTop) / kRange, 0, 1);
+    kStage.style.setProperty('--edge', (100 * (1 - smooth(0.06, 0.94, p))).toFixed(3) + '%');
+  }
+
+  function onScrollFrame() {
+    const y = window.scrollY;
+    updateKarman(y);
+    updateNav(y);
+    updateHero(y);
+    renderAlt(altitudeAt(y));
+  }
+  window.addEventListener('scroll', () => { scrollDirty = true; kick(); }, { passive: true });
+
+  /* ---------- star field ---------- */
+  const sky = $('#sky');
+  const sctx = sky && sky.getContext ? sky.getContext('2d') : null;
+  let stars = [], sW = 0, sH = 0, satPass = null;
+  function seedStars() {
+    const n = Math.min(900, Math.round(window.innerWidth * window.innerHeight / 2300));
+    stars = [];
+    for (let i = 0; i < n; i++) {
+      const big = Math.random() < 0.06;
+      stars.push({
+        x: Math.random(), y: Math.random(),
+        r: big ? 0.9 + Math.random() * 0.8 : 0.3 + Math.random() * 0.5,
+        a: big ? 0.7 + Math.random() * 0.3 : 0.2 + Math.random() * 0.55,
+        w: 0.3 + Math.random() * 1.4, p: Math.random() * 6.283,
+        d: 0.015 + Math.random() * 0.085
+      });
+    }
+  }
+  function sizeSky() {
+    if (!sctx) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const w = window.innerWidth, h = window.innerHeight;
+    if (!stars.length || Math.abs(w - sW) > 40) { sW = w; seedStars(); }
+    sW = w; sH = h;
+    sky.width = Math.round(w * dpr); sky.height = Math.round(h * dpr);
+    sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawSky(performance.now());
+  }
+  function drawSky(t) {
+    if (!sctx) return;
+    sctx.clearRect(0, 0, sW, sH);
+    sctx.fillStyle = COLOR_STAR;
+    const sy = reduce ? 0 : window.scrollY;
+    for (const s of stars) {
+      let y = (s.y * sH - sy * s.d) % sH; if (y < 0) y += sH;
+      const x = s.x * sW;
+      sctx.globalAlpha = reduce ? s.a : s.a * (0.62 + 0.38 * Math.sin(t * 0.001 * s.w + s.p));
+      if (s.r < 0.75) sctx.fillRect(x, y, s.r * 1.6, s.r * 1.6);
+      else { sctx.beginPath(); sctx.arc(x, y, s.r, 0, 6.2832); sctx.fill(); }
+    }
+    if (!reduce) {
+      if (!satPass || t > satPass.end + 7000) {
+        const ltr = Math.random() < 0.5, y0 = sH * (0.08 + Math.random() * 0.45);
+        satPass = { x0: ltr ? -20 : sW + 20, x1: ltr ? sW + 20 : -20, y0, y1: y0 + sH * (0.12 + Math.random() * 0.25), start: t, end: t + 16000 };
+      }
+      if (t >= satPass.start && t <= satPass.end) {
+        const k = (t - satPass.start) / (satPass.end - satPass.start);
+        sctx.globalAlpha = 0.9 * Math.sin(Math.PI * k);
+        sctx.beginPath(); sctx.arc(lerp(satPass.x0, satPass.x1, k), lerp(satPass.y0, satPass.y1, k), 1.25, 0, 6.2832); sctx.fill();
+      }
+    }
+    sctx.globalAlpha = 1;
+  }
+  const starLoop = t => drawSky(t);
+  const voidZones = ['#karman', '#orbits', '#parameters', '#sequence', '#register', '.footer'].map(s => $(s)).filter(Boolean);
+  const voidVis = new Map();
+  function syncStars() {
+    const any = !HAS_IO || voidZones.some(z => voidVis.get(z));
+    if (any && !reduce) addLoop(starLoop); else removeLoop(starLoop);
+    if (reduce) drawSky(0);
+  }
+  voidZones.forEach(z => watch(z, v => { voidVis.set(z, v); syncStars(); }));
+
+  /* ---------- transmission waveform ---------- */
+  const wave = $('.tx-wave');
+  const wctx = wave && wave.getContext ? wave.getContext('2d') : null;
+  let wW = 0, wH = 0;
+  function sizeWave() {
+    if (!wctx) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const r = wave.getBoundingClientRect();
+    wW = r.width; wH = r.height;
+    wave.width = Math.round(wW * dpr); wave.height = Math.round(wH * dpr);
+    wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawWave(performance.now());
+  }
+  function drawWave(t) {
+    if (!wctx || !wW) return;
+    wctx.clearRect(0, 0, wW, wH);
+    const mid = wH / 2, tt = reduce ? 0.8 : t * 0.001;
+    wctx.globalAlpha = 1; wctx.strokeStyle = COLOR_HAIR; wctx.lineWidth = 1;
+    wctx.beginPath(); wctx.moveTo(0, mid + 0.5); wctx.lineTo(wW, mid + 0.5); wctx.stroke();
+    wctx.strokeStyle = COLOR_INK; wctx.lineWidth = 1.1; wctx.beginPath();
+    for (let x = 0; x <= wW; x += 1.5) {
+      const u = x / wW;
+      const burst = Math.pow(Math.max(0, Math.sin((u * 2.6 - tt * 0.32) * Math.PI)), 14);
+      const noise = (Math.sin(x * 0.93 + tt * 13) + Math.sin(x * 0.41 - tt * 7.3) + Math.sin(x * 2.1 + tt * 3)) / 3;
+      const y = mid + Math.sin(x * 0.6 - tt * 9) * (1.6 + burst * wH * 0.36) + noise * 2.4;
+      x === 0 ? wctx.moveTo(x, y) : wctx.lineTo(x, y);
+    }
+    wctx.stroke();
+  }
+  const waveLoop = t => drawWave(t);
+  watch(wave, v => { if (v && !reduce) addLoop(waveLoop); else removeLoop(waveLoop); });
+
+  /* ---------- orbit diagram ---------- */
+  const svg = $('#orbit-svg');
+  const items = $$('.orbit-item');
+  // Periods follow Kepler's third law (T ∝ r^1.5); the ground ring turns with the Earth.
+  const ORB = [64, 100, 136, 172, 208, 246, 286].map((rx, i) => ({
+    rx,
+    period: i === 0 ? 60 : 10 * Math.pow(rx / 100, 1.5),
+    kind: i === 0 ? 'ground' : i === 6 ? 'moon' : ''
+  }));
+  const TILT = -14 * Math.PI / 180, RYF = 0.36, ER = 44;
+  const NS = 'http://www.w3.org/2000/svg';
+  const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  let label = null, active = 0, hoverIdx = -1, scrollIdx = 0, orbitStart = performance.now();
+  if (svg) {
+    const g = mk('g', { transform: 'rotate(' + (TILT * 180 / Math.PI) + ')' }, svg);
+    const gBack = mk('g', {}, g), gEarth = mk('g', {}, g), gFront = mk('g', {}, g), gSats = mk('g', {}, g);
+    mk('circle', { r: ER, class: 'earth-body' }, gEarth);
+    mk('path', { d: 'M 0 ' + (-ER) + ' A ' + ER + ' ' + ER + ' 0 0 1 0 ' + ER + ' A ' + (ER - 9) + ' ' + ER + ' 0 0 0 0 ' + (-ER) + ' Z', class: 'earth-limb' }, gEarth);
+    ORB.forEach((o, i) => {
+      const ry = o.rx * RYF;
+      const dash = o.kind === 'ground' ? ' orb-dash' : '';
+      o.ry = ry;
+      o.back = mk('path', { d: 'M ' + (-o.rx) + ' 0 A ' + o.rx + ' ' + ry + ' 0 0 1 ' + o.rx + ' 0', class: 'orb-path orb-back' + dash }, gBack);
+      o.front = mk('path', { d: 'M ' + o.rx + ' 0 A ' + o.rx + ' ' + ry + ' 0 0 1 ' + (-o.rx) + ' 0', class: 'orb-path orb-front' + dash }, gFront);
+      o.g = mk('g', { class: 'sat-g' }, gSats);
+      mk('circle', { r: 11, class: 'sat-halo' }, o.g);
+      if (o.kind === 'moon') {
+        mk('circle', { r: 8, class: 'moon-body' }, o.g);
+        mk('path', { d: 'M 0 -8 A 8 8 0 0 1 0 8 A 5.5 8 0 0 0 0 -8 Z', class: 'moon-limb' }, o.g);
+      } else if (o.kind === 'ground') {
+        mk('rect', { x: -3, y: -3, width: 6, height: 6, transform: 'rotate(45)', class: 'sat' }, o.g);
+      } else {
+        o.dot = mk('circle', { r: 3, class: 'sat' }, o.g);
+      }
+      o.theta0 = (15 + i * 137.5) * Math.PI / 180;
+    });
+    label = mk('text', { class: 'orb-label', x: 0, y: 0 }, svg);
+  }
+  function placeSats(t) {
+    if (!svg) return;
+    const el = (t - orbitStart) / 1000;
+    ORB.forEach(o => {
+      const th = o.theta0 + (reduce ? 0 : el * 2 * Math.PI / o.period);
+      const x = o.rx * Math.cos(th), y = o.ry * Math.sin(th);
+      o.x = x; o.y = y;
+      o.g.setAttribute('transform', 'translate(' + x.toFixed(2) + ' ' + y.toFixed(2) + ')');
+      const hidden = y < 0 && (x * x + y * y) < ER * ER;
+      o.g.style.opacity = hidden ? '0' : '';
+    });
+    if (label) {
+      const o = ORB[active];
+      const c = Math.cos(TILT), s = Math.sin(TILT);
+      const X = o.x * c - o.y * s, Y = o.x * s + o.y * c;
+      const toRight = X < 120;
+      label.setAttribute('x', (X + (toRight ? 16 : -16)).toFixed(1));
+      label.setAttribute('y', (Y - 14).toFixed(1));
+      label.setAttribute('text-anchor', toRight ? 'start' : 'end');
+    }
+  }
+  function setActive(i) {
+    if (!items.length) return;
+    i = clamp(i, 0, items.length - 1);
+    active = i;
+    items.forEach((li, k) => li.classList.toggle('is-active', k === i));
+    ORB.forEach((o, k) => {
+      if (!o.back) return;
+      const on = k === i;
+      o.back.classList.toggle('is-active', on);
+      o.front.classList.toggle('is-active', on);
+      o.g.classList.toggle('is-active', on);
+      if (o.dot) o.dot.setAttribute('r', on ? 4.5 : 3);
+    });
+    if (label) label.textContent = items[i].dataset.short || '';
+    placeSats(performance.now());
+  }
+  if (items.length) {
+    items.forEach((li, i) => {
+      li.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { hoverIdx = i; setActive(i); } });
+      li.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { hoverIdx = -1; setActive(scrollIdx); } });
+      li.addEventListener('click', () => { scrollIdx = i; setActive(i); });
+    });
+    if (HAS_IO) {
+      const io = new IntersectionObserver(es => {
+        es.forEach(e => {
+          if (!e.isIntersecting) return;
+          scrollIdx = items.indexOf(e.target);
+          if (hoverIdx < 0) setActive(scrollIdx);
+        });
+      }, { rootMargin: '-49% 0px -50% 0px' });
+      items.forEach(li => io.observe(li));
+    }
+    setActive(0);
+  }
+  const orbitLoop = t => placeSats(t);
+  watch($('#orbits'), v => { if (v && !reduce) addLoop(orbitLoop); else removeLoop(orbitLoop); });
+
+  /* ---------- reveal effects (always start from readable text) ---------- */
+  const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+=/<>';
+  function scramble(el) {
+    const final = el.textContent;
+    const chars = Array.from(final);
+    const t0 = performance.now();
+    const run = now => {
+      const dt = now - t0;
+      let out = '', done = true;
+      chars.forEach((c, i) => {
+        if (/[\s·.,:−\-]/.test(c) || dt >= 220 + i * 26) out += c;
+        else { done = false; out += GLYPHS[(Math.random() * GLYPHS.length) | 0]; }
+      });
+      el.textContent = done ? final : out;
+      if (!done) requestAnimationFrame(run);
+    };
+    requestAnimationFrame(run);
+  }
+  if (HAS_IO && !reduce) {
+    const sio = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) { sio.unobserve(e.target); scramble(e.target); }
+    }), { threshold: 1 });
+    $$('[data-scramble]').forEach(el => sio.observe(el));
+
+    $$('[data-sweep]').forEach(el => {
+      const words = el.textContent.trim().split(/\s+/);
+      el.textContent = '';
+      words.forEach((w, i) => {
+        const s = document.createElement('span');
+        s.className = 'sw'; s.style.setProperty('--i', i); s.textContent = w;
+        el.appendChild(s);
+        if (i < words.length - 1) el.appendChild(document.createTextNode(' '));
+      });
+      if (el.getBoundingClientRect().top > window.innerHeight * 0.8) {
+        el.classList.add('sweep-ready');
+        const wio = new IntersectionObserver(es => es.forEach(e => {
+          if (e.isIntersecting) { wio.disconnect(); el.classList.add('sweep-on'); }
+        }), { rootMargin: '0px 0px -25% 0px' });
+        wio.observe(el);
+      }
+    });
+
+    $$('[data-count]').forEach(el => {
+      const target = Number(el.dataset.count), suffix = el.dataset.suffix || '';
+      if (!Number.isFinite(target)) return;
+      const cio = new IntersectionObserver(es => {
+        if (!es.some(e => e.isIntersecting)) return;
+        cio.disconnect();
+        const t0 = performance.now();
+        const step = now => {
+          const k = clamp((now - t0) / 1300, 0, 1);
+          el.textContent = Math.round(target * (1 - Math.pow(1 - k, 3))) + suffix;
+          if (k < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }, { threshold: 0.6 });
+      cio.observe(el);
+    });
+  }
+
+  /* ---------- reduced-motion changes ---------- */
+  if (mqReduce) {
+    const onChange = e => {
+      reduce = e.matches;
+      if (reduce) { [starLoop, waveLoop, orbitLoop, easeMouse].forEach(removeLoop); drawSky(0); drawWave(0); placeSats(performance.now()); }
+      syncStars();
+      scrollDirty = true; kick();
+    };
+    if (mqReduce.addEventListener) mqReduce.addEventListener('change', onChange);
+    else if (mqReduce.addListener) mqReduce.addListener(onChange);
+  }
+
+  /* ---------- boot ---------- */
+  function relayout() { measure(); sizeSky(); sizeWave(); scrollDirty = true; kick(); }
+  let resizeTimer = 0;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(relayout, 120); });
+  window.addEventListener('load', relayout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout).catch(() => {});
+  relayout();
+  placeSats(performance.now());
+  tick();
+  syncStars();
+
+  try {
+    console.log('%cNULLORIGIN // INCOMING TRANSMISSION', 'font: 600 12px monospace; letter-spacing: 4px;');
+    console.log('Signal locked. The first flag is somewhere in this page\'s source.');
+  } catch (e) { /* console unavailable */ }
+})();
+</script>
+
+</body></html>
